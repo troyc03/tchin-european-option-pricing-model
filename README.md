@@ -19,13 +19,7 @@ $$
 The exact terminal asset price is
 
 $$
-S_T =
-S_0
-\exp\left[
-\left(r - \frac{1}{2}\sigma^2\right)T
-+
-\sigma\sqrt{T}Z
-\right],
+S_T = S_0 \exp\left[\left(r - \frac{1}{2}\sigma^2\right)T+\sigma\sqrt{T}Z \right],
 $$
 where \(Z \sim \mathcal{N}(0,1)\).
 
