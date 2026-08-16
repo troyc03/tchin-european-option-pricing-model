@@ -70,5 +70,40 @@ def monte_carlo_gbm():
     print(f"  Right Scheme:    {price_right:.4f}")
     print(f"  Midpoint Scheme: {price_mid:.4f}")
 
+    # Calculate and print a table of errors between the schemes and the exact solution
+    errors_left = []
+    errors_right = []
+    errors_mid = []
+
+    for t in range(N + 1):
+        error_left = np.mean(np.abs(S_left[:, t] - S_exact[:, t]))
+        error_right = np.mean(np.abs(S_right[:, t] - S_exact[:, t]))
+        error_mid = np.mean(np.abs(S_mid[:, t] - S_exact[:, t]))
+
+        errors_left.append(error_left)
+        errors_right.append(error_right)
+        errors_mid.append(error_mid)
+
+    # Print the error table
+    print("\nAverage Absolute Errors at Each Time Step:")
+    print(f"{'Time Step':<10} {'Left Scheme':<15} {'Right Scheme':<15} {'Midpoint Scheme':<15}")
+    for t in range(N + 1):
+        print(f"{t:<10} {errors_left[t]:<15.6f} {errors_right[t]:<15.6f} {errors_mid[t]:<15.6f}")
+
+    # Save as a CSV file for further analysis
+    import pandas as pd
+
+    error_df = pd.DataFrame({
+        'Time Step': np.arange(N + 1),
+        'Left Scheme Error': errors_left,
+        'Right Scheme Error': errors_right,
+        'Midpoint Scheme Error': errors_mid
+    })
+
+
+    error_df.to_csv('monte_carlo_errors.csv', index=False)
+
+    print('Saved MC error dataset for analysis.')
+
 if __name__ == "__main__":
     monte_carlo_gbm()
