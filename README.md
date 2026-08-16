@@ -1,8 +1,8 @@
-# European Option Pricing Model
+# Optimal European Option Pricing Model Using Monte Carlo and Crank-Nicolson Methods
 
 A basic Monte Carlo framework for pricing **European call options**, with numerical results validated against both the **Black–Scholes closed-form solution** and the **Black–Scholes partial differential equation (PDE)**.
 
-The project is intended as a computational demonstration of how stochastic simulation can be used to estimate derivative prices and how the resulting Monte Carlo estimator relates to the classical analytical and PDE formulations of the Black–Scholes model.
+The project demonstrates how stochastic simulation can be used to estimate derivative prices and how the resulting Monte Carlo estimator relates to the classical analytical and PDE formulations of the Black–Scholes model.
 
 ---
 
@@ -19,8 +19,8 @@ The project is intended as a computational demonstration of how stochastic simul
 
   * [Geometric Brownian Motion](#geometric-brownian-motion)
   * [Monte Carlo Pricing](#monte-carlo-pricing)
-  * [Black–Scholes Closed-Form Solution](#black-scholes-closed-form-solution)
-  * [Black–Scholes PDE](#black-scholes-pde)
+  * [Black–Scholes Closed-Form Solution](#blackscholes-closed-form-solution)
+  * [Black–Scholes PDE](#blackscholes-pde)
 * [Monte Carlo Algorithm](#monte-carlo-algorithm)
 * [Validation Methodology](#validation-methodology)
 * [Convergence and Statistical Error](#convergence-and-statistical-error)
@@ -28,97 +28,97 @@ The project is intended as a computational demonstration of how stochastic simul
 * [Installation](#installation)
 * [Usage](#usage)
 * [Model Parameters](#model-parameters)
-* [Example Workflow](#example-workflow)
+* [Example](#example)
 * [Interpreting the Results](#interpreting-the-results)
 * [Numerical Considerations](#numerical-considerations)
+* [Variance Reduction](#variance-reduction)
 * [Limitations](#limitations)
 * [Possible Extensions](#possible-extensions)
-* [Theoretical Background](#theoretical-background)
+* [Testing](#testing)
 * [References](#references)
-* [License](#license)
+* [Disclaimer](#disclaimer)
 
 ---
 
-## Overview
+# Overview
 
-This project implements a **Monte Carlo option pricing model** for a European call option under the standard Black–Scholes assumptions.
+This project implements a **Monte Carlo option pricing model** for a European call option under the standard assumptions of the Black–Scholes framework.
 
-The central idea is straightforward:
+The basic workflow is:
 
-1. Model the evolution of the underlying asset using **geometric Brownian motion**.
+1. Model the underlying asset using geometric Brownian motion.
 2. Simulate a large number of possible terminal asset prices.
-3. Evaluate the option payoff for each simulated path.
-4. Discount the average payoff back to the present under the risk-neutral measure.
+3. Evaluate the European call payoff for each simulated price.
+4. Discount the average payoff back to the present.
 5. Compare the Monte Carlo estimate against:
 
-   * the **Black–Scholes analytical formula**, and
-   * a numerical solution of the **Black–Scholes PDE**.
+   * the analytical Black–Scholes formula, and
+   * a numerical solution of the Black–Scholes PDE.
 
-For a European call option with strike price (K) and maturity (T), the payoff is
+For a European call option with strike price $K$ and maturity $T$, the payoff at maturity is
 
-[
+$$
 C_T = \max(S_T-K,0),
-]
+$$
 
-where (S_T) is the underlying asset price at maturity.
+where $S_T$ is the underlying asset price at maturity.
 
-The Monte Carlo estimator approximates the option price through
+The Monte Carlo estimator is
 
-[
-C_0 \approx e^{-rT}\frac{1}{N}
+$$
+\hat{C}_N
+=========
+
+e^{-rT}
+\frac{1}{N}
 \sum_{i=1}^{N}
-\max(S_T^{(i)}-K,0),
-]
+\max\left(S_T^{(i)}-K,0\right),
+$$
 
 where:
 
-* (S_0) is the current underlying price,
-* (K) is the strike price,
-* (T) is the time to maturity,
-* (r) is the continuously compounded risk-free interest rate,
-* (\sigma) is the volatility,
-* (N) is the number of Monte Carlo simulations.
+* $S_0$ is the current underlying asset price,
+* $K$ is the strike price,
+* $T$ is the time to maturity,
+* $r$ is the continuously compounded risk-free rate,
+* $\sigma$ is the volatility,
+* $N$ is the number of Monte Carlo simulations.
 
-The analytical Black–Scholes price provides a deterministic benchmark against which the stochastic Monte Carlo approximation can be tested.
+The Black–Scholes closed-form solution provides a deterministic benchmark against which the stochastic Monte Carlo estimate can be validated.
 
 ---
 
 # Project Objectives
 
-The project has several objectives.
+The main objectives of this project are:
 
 ### 1. Implement Monte Carlo option pricing
 
 Generate risk-neutral samples of the underlying asset price and use those samples to estimate the discounted expected payoff.
 
-### 2. Demonstrate stochastic convergence
+### 2. Demonstrate Monte Carlo convergence
 
 Show that increasing the number of simulations causes the Monte Carlo estimator to converge toward the theoretical option price.
 
-### 3. Validate against Black–Scholes
+### 3. Validate the implementation against Black–Scholes
 
-Use the closed-form Black–Scholes formula as a high-precision reference value.
+Use the analytical Black–Scholes formula as a benchmark for the Monte Carlo estimator.
 
-### 4. Connect the probabilistic and PDE formulations
+### 4. Connect probabilistic and PDE formulations
 
-The Black–Scholes framework admits both:
+Demonstrate that the Monte Carlo, analytical, and PDE approaches produce consistent option prices.
 
-* a probabilistic interpretation through risk-neutral expectations, and
-* a deterministic interpretation through a parabolic PDE.
+### 5. Provide a foundation for further development
 
-The project demonstrates the numerical consistency between these approaches.
-
-### 5. Provide a computational foundation
-
-The implementation can serve as a starting point for more advanced derivative-pricing techniques, including:
+The implementation can serve as a starting point for more advanced computational-finance techniques, including:
 
 * variance reduction,
 * path-dependent options,
 * stochastic volatility,
-* interest-rate models,
+* finite-difference PDE methods,
+* quasi-Monte Carlo,
 * American option pricing,
-* finite-difference PDE solvers,
-* quasi-Monte Carlo methods.
+* multi-asset derivatives.
 
 ---
 
@@ -126,59 +126,55 @@ The implementation can serve as a starting point for more advanced derivative-pr
 
 ## European Call Option
 
-A European call option gives its holder the right, but not the obligation, to purchase an underlying asset for a fixed strike price (K) at a specified maturity date (T).
+A European call option gives its holder the right, but not the obligation, to purchase an underlying asset for a fixed strike price $K$ at maturity $T$.
 
-Its payoff at maturity is
+Its payoff is
 
-[
-\boxed{
-\max(S_T-K,0)
-}
-]
-
-where (S_T) is the asset price at maturity.
+$$
+C_T = \max(S_T-K,0).
+$$
 
 There are two possible cases.
 
-### In-the-money
+### In the Money
 
 If
 
-[
-S_T>K,
-]
+$$
+S_T > K,
+$$
 
 the option has positive value:
 
-[
-C_T=S_T-K.
-]
+$$
+C_T = S_T-K.
+$$
 
-### Out-of-the-money
+### Out of the Money
 
 If
 
-[
-S_T\leq K,
-]
+$$
+S_T \leq K,
+$$
 
 the option expires worthless:
 
-[
-C_T=0.
-]
+$$
+C_T = 0.
+$$
 
-Therefore,
+Therefore, the payoff can be written compactly as
 
-[
-C_T=(S_T-K)^+,
-]
+$$
+C_T = (S_T-K)^+,
+$$
 
 where
 
-[
-x^+=\max(x,0).
-]
+$$
+x^+ = \max(x,0).
+$$
 
 ---
 
@@ -186,30 +182,67 @@ x^+=\max(x,0).
 
 The standard Black–Scholes model assumes that the underlying asset follows a **geometric Brownian motion**.
 
-Under the physical probability measure,
+Under the physical probability measure, the asset follows
 
-[
-dS_t=\mu S_t,dt+\sigma S_t,dW_t,
-]
+$$
+dS_t = \mu S_t,dt + \sigma S_t,dW_t,
+$$
 
 where:
 
-* (S_t) is the underlying asset price,
-* (\mu) is the expected return,
-* (\sigma) is the volatility,
-* (W_t) is a standard Brownian motion.
+* $S_t$ is the underlying asset price,
+* $\mu$ is the expected return,
+* $\sigma$ is the volatility,
+* $W_t$ is a standard Brownian motion.
 
-For option pricing, however, the relevant dynamics are expressed under the **risk-neutral measure**:
+For derivative pricing, however, the relevant dynamics are expressed under the **risk-neutral measure**:
 
-[
-\boxed{
-dS_t=rS_t,dt+\sigma S_t,dW_t^Q
-}
-]
+$$
+dS_t = rS_t,dt + \sigma S_t,dW_t^Q.
+$$
 
-where (r) is the risk-free rate.
+The physical drift $\mu$ is replaced by the risk-free rate $r$ because arbitrage-free derivative pricing is performed under the risk-neutral measure.
 
-The drift changes from (\mu) to (r) because derivative prices are obtained through risk-neutral valuation rather than by directly forecasting the expected physical return of the asset.
+---
+
+# Risk-Neutral Valuation
+
+Under the risk-neutral measure, the price of a derivative paying $\Phi(S_T)$ at maturity is
+
+$$
+V_0
+===
+
+e^{-rT}
+\mathbb{E}^Q
+\left[
+\Phi(S_T)
+\right].
+$$
+
+For a European call,
+
+$$
+\Phi(S_T)
+=========
+
+\max(S_T-K,0),
+$$
+
+so
+
+$$
+C_0
+===
+
+e^{-rT}
+\mathbb{E}^Q
+\left[
+\max(S_T-K,0)
+\right].
+$$
+
+This expectation is the fundamental quantity estimated by the Monte Carlo implementation.
 
 ---
 
@@ -217,382 +250,484 @@ The drift changes from (\mu) to (r) because derivative prices are obtained throu
 
 ## Geometric Brownian Motion
 
-The stochastic differential equation
+Under the risk-neutral measure, the underlying asset satisfies
 
-[
-dS_t=rS_t,dt+\sigma S_t,dW_t
-]
+$$
+dS_t
+====
 
-has the exact solution
+rS_t,dt
++
+\sigma S_t,dW_t^Q.
+$$
 
-[
-\boxed{
-S_T =
+The exact solution is
+
+$$
+S_T
+===
+
 S_0
 \exp
 \left[
-\left(r-\frac{1}{2}\sigma^2\right)T
+\left(
+r-\frac{1}{2}\sigma^2
+\right)T
 +
-\sigma W_T
-\right]
-}
-]
+\sigma W_T^Q
+\right].
+$$
 
-and since
+Since
 
-[
-W_T\sim N(0,T),
-]
+$$
+W_T^Q \sim \mathcal{N}(0,T),
+$$
 
 we can write
 
-[
-W_T=\sqrt{T}Z,
+$$
+W_T^Q = \sqrt{T}Z,
 \qquad
-Z\sim N(0,1).
-]
+Z\sim\mathcal{N}(0,1).
+$$
 
 Therefore,
 
-[
+$$
 \boxed{
-S_T =
+S_T
+===
+
 S_0
 \exp
 \left[
-\left(r-\frac{1}{2}\sigma^2\right)T
+\left(
+r-\frac{1}{2}\sigma^2
+\right)T
 +
 \sigma\sqrt{T}Z
 \right]
 }
-]
+$$
 
-This expression is particularly useful for Monte Carlo pricing because terminal asset prices can be generated directly without numerically discretizing the stochastic differential equation.
+This closed-form expression for $S_T$ is particularly useful for Monte Carlo pricing because it allows the terminal asset price to be sampled directly without discretizing the stochastic differential equation.
 
 ---
 
 # Monte Carlo Pricing
 
-Under risk-neutral valuation, the present value of a European call is
+The risk-neutral value of a European call is
 
-[
-C_0=
+$$
+C_0
+===
+
 e^{-rT}
 \mathbb{E}^Q
 \left[
 (S_T-K)^+
 \right].
-]
+$$
 
-Monte Carlo replaces the expectation with a sample average.
+Monte Carlo simulation approximates this expectation using a finite number of independent samples.
 
-Generate (N) independent standard normal random variables
+Generate
 
-[
-Z_1,\ldots,Z_N\sim N(0,1).
-]
+$$
+Z_1,Z_2,\ldots,Z_N
+\sim
+\mathcal{N}(0,1).
+$$
 
 For each sample, calculate
 
-[
+$$
 S_T^{(i)}
 =========
 
 S_0
 \exp
 \left[
-\left(r-\frac12\sigma^2\right)T
+\left(
+r-\frac{1}{2}\sigma^2
+\right)T
 +
 \sigma\sqrt{T}Z_i
 \right].
-]
+$$
 
-Then calculate the corresponding payoff
+The corresponding option payoff is
 
-[
-P_i=
-\max(S_T^{(i)}-K,0).
-]
+$$
+P_i
+===
 
-The Monte Carlo estimator is
+\max
+\left(
+S_T^{(i)}-K,
+0
+\right).
+$$
 
-[
+The Monte Carlo estimator is then
+
+$$
 \boxed{
-\hat C_N
-========
+\hat{C}_N
+=========
 
 e^{-rT}
 \frac{1}{N}
-\sum_{i=1}^{N}P_i
+\sum_{i=1}^{N}
+P_i
 }
-]
+$$
 
-As (N\rightarrow\infty),
+or equivalently,
 
-[
-\hat C_N\rightarrow C_0
-]
+$$
+\boxed{
+\hat{C}_N
+=========
 
-under the law of large numbers.
+e^{-rT}
+\frac{1}{N}
+\sum_{i=1}^{N}
+\max
+\left(
+S_T^{(i)}-K,
+0
+\right)
+}
+$$
+
+As $N\rightarrow\infty$, the law of large numbers gives
+
+$$
+\hat{C}_N
+\rightarrow
+C_0.
+$$
 
 ---
 
 # Black–Scholes Closed-Form Solution
 
-For a European call option paying no dividends, the Black–Scholes price is
+For a European call option on a non-dividend-paying underlying, the Black–Scholes price is
 
-[
+$$
 \boxed{
-C_0=S_0N(d_1)-Ke^{-rT}N(d_2)
+C_0
+===
+
+## S_0N(d_1)
+
+Ke^{-rT}N(d_2)
 }
-]
+$$
 
-where (N(\cdot)) is the cumulative distribution function of the standard normal distribution.
+where $N(\cdot)$ is the cumulative distribution function of the standard normal distribution.
 
-The terms (d_1) and (d_2) are
+The quantities $d_1$ and $d_2$ are defined as
 
-[
+$$
 \boxed{
-d_1=
+d_1
+===
+
 \frac{
-\ln(S_0/K)
+\ln\left(\frac{S_0}{K}\right)
 +
-(r+\frac12\sigma^2)T
+\left(
+r+\frac{1}{2}\sigma^2
+\right)T
 }{
 \sigma\sqrt{T}
 }
 }
-]
+$$
 
 and
 
-[
+$$
 \boxed{
-d_2=d_1-\sigma\sqrt{T}
-}
-]
+d_2
+===
 
-The Black–Scholes price serves as the analytical benchmark for the Monte Carlo implementation.
+d_1-\sigma\sqrt{T}
+}
+$$
+
+The Black–Scholes price provides the analytical reference value used to validate the Monte Carlo implementation.
 
 ---
 
 # Black–Scholes PDE
 
-The same option price can also be obtained from the Black–Scholes partial differential equation.
+The same option-pricing problem can also be formulated as a deterministic partial differential equation.
 
 Let
 
-[
+$$
 C=C(S,t)
-]
+$$
 
-denote the value of the European call option at time (t) when the underlying asset has price (S).
+denote the value of the European call when the underlying price is $S$ at time $t$.
 
 The Black–Scholes PDE is
 
-[
+$$
 \boxed{
 \frac{\partial C}{\partial t}
 +
-\frac12\sigma^2S^2
-\frac{\partial^2C}{\partial S^2}
+\frac{1}{2}\sigma^2S^2
+\frac{\partial^2 C}{\partial S^2}
 +
 rS\frac{\partial C}{\partial S}
--rC
-=0
+-------------------------------
+
+# rC
+
+0
 }
-]
+$$
 
 with terminal condition
 
-[
+$$
 \boxed{
-C(S,T)=\max(S-K,0)
+C(S,T)
+======
+
+\max(S-K,0)
 }
-]
+$$
 
-and appropriate boundary conditions.
+For a European call, appropriate boundary conditions include
 
-For a European call, the asymptotic boundary behavior is approximately
-
-[
+$$
 C(0,t)=0
-]
+$$
 
-and, for sufficiently large (S),
+and, as $S\rightarrow\infty$,
 
-[
-C(S,t)\sim S-Ke^{-r(T-t)}.
-]
+$$
+C(S,t)
+\sim
+S-Ke^{-r(T-t)}.
+$$
 
-A numerical PDE solver can discretize the spatial and temporal domains and solve backward from the terminal payoff.
+A numerical PDE solver discretizes the asset-price and time dimensions and solves the equation backward from the terminal payoff.
 
 ---
 
-# Relationship Between Monte Carlo, Black–Scholes, and the PDE
+# Monte Carlo, Black–Scholes, and the PDE
 
-These three approaches are different numerical representations of the same mathematical pricing problem.
+The three approaches used in this project represent different formulations of the same pricing problem.
 
 ### Monte Carlo
 
-Computes the expectation
+The Monte Carlo approach evaluates
 
-[
-C_0=
-e^{-rT}\mathbb E^Q[(S_T-K)^+]
-]
+$$
+C_0
+===
 
-using random samples.
+e^{-rT}
+\mathbb{E}^Q
+\left[
+(S_T-K)^+
+\right]
+$$
 
-### Black–Scholes formula
+numerically using random samples.
 
-Evaluates the same expectation analytically:
+### Black–Scholes Formula
 
-[
-C_0=S_0N(d_1)-Ke^{-rT}N(d_2).
-]
+The closed-form formula evaluates the same expectation analytically:
+
+$$
+C_0
+===
+
+## S_0N(d_1)
+
+Ke^{-rT}N(d_2).
+$$
 
 ### Black–Scholes PDE
 
-Solves the deterministic PDE
+The PDE solves
 
-[
-C_t+\frac12\sigma^2S^2C_{SS}+rSC_S-rC=0
-]
+$$
+\frac{\partial C}{\partial t}
++
+\frac{1}{2}\sigma^2S^2
+\frac{\partial^2 C}{\partial S^2}
++
+rS\frac{\partial C}{\partial S}
+-------------------------------
 
-with terminal payoff
+# rC
 
-[
-C(S,T)=(S-K)^+.
-]
+0.
 
-The equivalence between the risk-neutral expectation and the PDE formulation follows from the **Feynman–Kac framework**.
+$$
 
-Consequently, agreement between the Monte Carlo estimate, the closed-form Black–Scholes price, and the PDE solution provides a useful validation of the numerical implementation.
+These formulations are connected through the **Feynman–Kac theorem**.
+
+Conceptually,
+
+$$
+\boxed{
+\text{Geometric Brownian Motion}
+\longleftrightarrow
+\text{Risk-Neutral Expectation}
+\longleftrightarrow
+\text{Black--Scholes PDE}
+}
+$$
+
+The project numerically demonstrates this equivalence.
 
 ---
 
 # Monte Carlo Algorithm
 
-The pricing procedure can be summarized as follows.
+The complete pricing procedure is:
 
-### Step 1 — Define model parameters
+### Step 1 — Define Model Parameters
 
 Specify
 
-[
+$$
 S_0,\quad K,\quad T,\quad r,\quad \sigma,\quad N.
-]
+$$
 
-### Step 2 — Generate random samples
+### Step 2 — Generate Standard Normal Samples
 
 Generate
 
-[
-Z_i\sim N(0,1).
-]
+$$
+Z_i\sim\mathcal{N}(0,1),
+\qquad
+i=1,\ldots,N.
+$$
 
-### Step 3 — Simulate terminal asset prices
+### Step 3 — Simulate Terminal Asset Prices
 
-For each sample,
+For every sample,
 
-[
+$$
 S_T^{(i)}
 =========
 
 S_0
 \exp
 \left[
-(r-\frac12\sigma^2)T
+\left(
+r-\frac{1}{2}\sigma^2
+\right)T
 +
 \sigma\sqrt{T}Z_i
 \right].
-]
+$$
 
-### Step 4 — Calculate option payoffs
-
-[
-P_i=\max(S_T^{(i)}-K,0).
-]
-
-### Step 5 — Average the payoffs
-
-[
-\bar P=
-\frac1N\sum_{i=1}^{N}P_i.
-]
-
-### Step 6 — Discount to the present
-
-[
-\hat C_N=e^{-rT}\bar P.
-]
-
-### Step 7 — Compare with Black–Scholes
+### Step 4 — Calculate Payoffs
 
 Calculate
 
-[
-C_{\mathrm{BS}}
-===============
+$$
+P_i
+===
 
-S_0N(d_1)-Ke^{-rT}N(d_2).
-]
+\max
+\left(
+S_T^{(i)}-K,
+0
+\right).
+$$
 
-The Monte Carlo pricing error can then be measured as
+### Step 5 — Calculate the Mean Payoff
 
-[
-\boxed{
-\epsilon_{\mathrm{MC}}
-======================
+Compute
 
-\hat C_N-C_{\mathrm{BS}}
-}
-]
+$$
+\bar{P}
+=======
 
-or in absolute terms,
+\frac{1}{N}
+\sum_{i=1}^{N}
+P_i.
+$$
 
-[
-|\epsilon_{\mathrm{MC}}|.
-]
+### Step 6 — Discount to the Present
+
+The Monte Carlo option price is
+
+$$
+\hat{C}_N
+=========
+
+e^{-rT}\bar{P}.
+$$
+
+### Step 7 — Compare Against Black–Scholes
+
+Calculate
+
+$$
+\epsilon
+========
+
+\hat{C}*N-C*{\mathrm{BS}}.
+$$
+
+The absolute pricing error is
+
+$$
+|\epsilon|
+==========
+
+\left|
+\hat{C}*N-C*{\mathrm{BS}}
+\right|.
+$$
 
 ---
 
 # Validation Methodology
 
-The primary validation strategy is to compare three independent calculations:
+The project validates the Monte Carlo implementation using two independent references:
 
-| Method        | Approach                       | Expected behavior              |
-| ------------- | ------------------------------ | ------------------------------ |
-| Monte Carlo   | Statistical simulation         | Converges with increasing (N)  |
-| Black–Scholes | Analytical closed form         | Reference solution             |
-| PDE           | Numerical deterministic solver | Converges with grid refinement |
+1. The analytical Black–Scholes formula.
+2. A numerical solution of the Black–Scholes PDE.
 
-The most important validation experiment is to increase the Monte Carlo sample size.
+A useful validation experiment is to increase the number of Monte Carlo simulations:
 
-For example, one can evaluate
+$$
+N
+=
 
-[
-N=10^2,;10^3,;10^4,;10^5,;10^6
-]
+10^2,;
+10^3,;
+10^4,;
+10^5,;
+10^6.
+$$
 
-and observe how
+For each value of $N$, calculate the Monte Carlo price and compare it with the Black–Scholes benchmark.
 
-[
-\hat C_N
-]
+A convergence plot can then show:
 
-approaches the Black–Scholes value.
-
-A useful convergence plot is:
-
-[
+$$
 \text{Monte Carlo Price}
 \quad\text{vs.}\quad
 \text{Number of Simulations}.
-]
+$$
 
-The Black–Scholes price can be plotted as a horizontal reference line.
+The analytical Black–Scholes price can be plotted as a horizontal reference line.
 
 ---
 
@@ -600,98 +735,116 @@ The Black–Scholes price can be plotted as a horizontal reference line.
 
 Monte Carlo methods converge relatively slowly.
 
-For an estimator with finite variance,
+If the discounted payoff has finite variance, then the standard error of the estimator behaves approximately as
 
-[
-\operatorname{SE}(\hat C_N)
-===========================
+$$
+\operatorname{SE}(\hat{C}_N)
+============================
 
 \frac{\sigma_P}{\sqrt{N}},
-]
+$$
 
-where (\sigma_P) is the standard deviation of the discounted payoff.
+where $\sigma_P$ is the standard deviation of the discounted payoff.
 
-The key relationship is therefore
+Therefore,
 
-[
+$$
 \boxed{
-\text{Monte Carlo error}\sim O(N^{-1/2})
+\text{Monte Carlo error}
+========================
+
+O\left(N^{-1/2}\right)
 }
-]
+$$
 
-This has an important practical consequence.
+This is one of the most important characteristics of Monte Carlo methods.
 
-To reduce the statistical error by a factor of 10, approximately 100 times as many simulations are required.
+To reduce the statistical error by a factor of $10$, approximately $100$ times as many simulations are required.
 
 For example:
 
 | Simulations | Approximate error scale |
 | ----------: | ----------------------: |
-|      (10^2) |               (10^{-1}) |
-|      (10^4) |               (10^{-2}) |
-|      (10^6) |               (10^{-3}) |
-|      (10^8) |               (10^{-4}) |
+|      $10^2$ |               $10^{-1}$ |
+|      $10^4$ |               $10^{-2}$ |
+|      $10^6$ |               $10^{-3}$ |
+|      $10^8$ |               $10^{-4}$ |
 
-These values describe the scaling behavior rather than guaranteed absolute errors.
+These values describe the asymptotic scaling behavior and should not be interpreted as guaranteed absolute errors.
 
 ---
 
-## Monte Carlo Confidence Interval
+# Monte Carlo Confidence Interval
 
-Let
+Define the discounted payoff for simulation $i$ as
 
-[
-X_i=e^{-rT}(S_T^{(i)}-K)^+
-]
+$$
+X_i
+===
 
-be the discounted payoff.
+e^{-rT}
+\max
+\left(
+S_T^{(i)}-K,
+0
+\right).
+$$
 
-The sample mean is
+The Monte Carlo estimate is
 
-[
-\hat C_N=\frac1N\sum_{i=1}^NX_i.
-]
+$$
+\hat{C}_N
+=========
+
+\frac{1}{N}
+\sum_{i=1}^{N}
+X_i.
+$$
 
 The sample variance is
 
-[
-s_X^2=
+$$
+s_X^2
+=====
+
 \frac{1}{N-1}
-\sum_{i=1}^N
-(X_i-\hat C_N)^2.
-]
+\sum_{i=1}^{N}
+\left(
+X_i-\hat{C}_N
+\right)^2.
+$$
 
 The estimated standard error is
 
-[
+$$
 \boxed{
 \widehat{\operatorname{SE}}
 ===========================
 
-\frac{s_X}{\sqrt N}
+\frac{s_X}{\sqrt{N}}
 }
-]
+$$
 
-For sufficiently large (N), an approximate 95% confidence interval is
+For sufficiently large $N$, an approximate 95% confidence interval is
 
-[
+$$
 \boxed{
-\hat C_N
+\hat{C}_N
 \pm
 1.96
-\frac{s_X}{\sqrt N}
+\frac{s_X}{\sqrt{N}}
 }
-]
+$$
 
-This is a much more informative validation metric than simply reporting the difference between Monte Carlo and Black–Scholes prices.
+This is an important part of Monte Carlo validation.
 
-A Monte Carlo estimate that differs from the analytical solution by a small amount is not necessarily "wrong"; the relevant question is whether the discrepancy is consistent with the estimator's statistical uncertainty.
+A Monte Carlo estimate that differs from the analytical Black–Scholes price is not necessarily incorrect. The difference should be interpreted relative to the estimator's statistical uncertainty.
 
 ---
 
 # Project Structure
 
-A typical project organization is:
+A typical repository structure might look like:
 
 ```text
 tchin-european-option-pricing-model/
@@ -719,15 +872,18 @@ tchin-european-option-pricing-model/
 └── LICENSE
 ```
 
-The exact structure depends on the implementation contained in the repository.
+The exact structure depends on the implementation in the repository.
 
-A sensible separation of responsibilities is:
+A reasonable separation of responsibilities is:
 
-* `monte_carlo.py` — stochastic simulation and pricing;
-* `black_scholes.py` — analytical pricing formula;
-* `pde.py` — numerical solution of the Black–Scholes PDE;
-* `tests/` — numerical and regression tests;
-* `notebooks/` — experiments and visualizations.
+| Component          | Responsibility                          |
+| ------------------ | --------------------------------------- |
+| `monte_carlo.py`   | Monte Carlo simulation and pricing      |
+| `black_scholes.py` | Analytical Black–Scholes pricing        |
+| `pde.py`           | Numerical PDE solution                  |
+| `tests/`           | Automated numerical tests               |
+| `notebooks/`       | Experiments and visualizations          |
+| `results/`         | Generated figures and numerical results |
 
 ---
 
@@ -758,13 +914,13 @@ On Windows:
 .venv\Scripts\activate
 ```
 
-Install the dependencies:
+Install the project dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-If the project is packaged as a Python module, install it in editable mode:
+If the project is packaged as an installable Python module, it can also be installed in editable mode:
 
 ```bash
 pip install -e .
@@ -774,21 +930,21 @@ pip install -e .
 
 # Usage
 
-The exact execution command depends on the repository implementation.
+The exact execution command depends on the implementation.
 
-A typical command-line workflow might look like:
+A typical command-line workflow might be:
 
 ```bash
 python src/monte_carlo.py
 ```
 
-or, if the implementation exposes a Python module:
+or:
 
 ```bash
 python -m src.monte_carlo
 ```
 
-For notebook-based experimentation:
+For notebook-based experiments:
 
 ```bash
 jupyter notebook
@@ -800,160 +956,167 @@ Then open the relevant notebook under `notebooks/`.
 
 # Model Parameters
 
-The pricing model is controlled by the following parameters.
+The model is controlled by the following parameters:
 
-| Parameter           |   Symbol | Description                            |
-| ------------------- | -------: | -------------------------------------- |
-| Initial asset price |    (S_0) | Current underlying price               |
-| Strike price        |      (K) | Exercise price                         |
-| Maturity            |      (T) | Time to expiration                     |
-| Risk-free rate      |      (r) | Continuously compounded risk-free rate |
-| Volatility          | (\sigma) | Annualized volatility                  |
-| Simulations         |      (N) | Number of Monte Carlo samples          |
+| Parameter           |  Symbol  | Description                            |
+| ------------------- | :------: | -------------------------------------- |
+| Initial asset price |   $S_0$  | Current underlying price               |
+| Strike price        |    $K$   | Exercise price                         |
+| Maturity            |    $T$   | Time to expiration                     |
+| Risk-free rate      |    $r$   | Continuously compounded risk-free rate |
+| Volatility          | $\sigma$ | Annualized volatility                  |
+| Simulations         |    $N$   | Number of Monte Carlo simulations      |
 
-For example, a test configuration could use:
+An illustrative configuration is:
 
 ```text
-S0      = 100
-K       = 100
-T       = 1
-r       = 0.05
-sigma   = 0.20
-N       = 1,000,000
+S0     = 100
+K      = 100
+T      = 1
+r      = 0.05
+sigma  = 0.20
+N      = 1000000
 ```
 
-These values correspond to an at-the-money European call with one year to maturity.
+These values represent an at-the-money European call with one year to maturity.
 
-They are illustrative parameters only; they are not market forecasts.
+They are illustrative model parameters and are not market forecasts.
 
 ---
 
-# Example Workflow
+# Example
 
 Consider a European call with
 
-[
+$$
 S_0=100,
-]
-
-[
+\qquad
 K=100,
-]
-
-[
+\qquad
 T=1,
-]
+$$
 
-[
+$$
 r=0.05,
-]
-
-and
-
-[
+\qquad
 \sigma=0.20.
-]
+$$
 
-The Monte Carlo simulation generates independent samples
+Generate
 
-[
-Z_i\sim N(0,1)
-]
+$$
+Z_i\sim\mathcal{N}(0,1).
+$$
 
-and transforms them into terminal prices:
+For each sample, calculate
 
-[
+$$
 S_T^{(i)}
 =========
 
 100
 \exp
 \left[
-(0.05-\frac12(0.20)^2)
+\left(
+0.05-\frac{1}{2}(0.20)^2
+\right)
 +
 0.20Z_i
 \right].
-]
+$$
 
-For every terminal price, the payoff is
+The payoff is
 
-[
-P_i=\max(S_T^{(i)}-100,0).
-]
+$$
+P_i
+===
 
-The price estimate is then
+\max
+\left(
+S_T^{(i)}-100,
+0
+\right).
+$$
 
-[
-\hat C_N
-========
+The Monte Carlo estimate is
+
+$$
+\hat{C}_N
+=========
 
 e^{-0.05}
-\frac1N
-\sum_{i=1}^NP_i.
-]
+\frac{1}{N}
+\sum_{i=1}^{N}
+P_i.
+$$
 
 The corresponding Black–Scholes benchmark is
 
-[
+$$
 C_{\mathrm{BS}}
 ===============
 
 ## 100N(d_1)
 
 100e^{-0.05}N(d_2),
-]
+$$
 
-with
+where
 
-[
-d_1=
+$$
+d_1
+===
+
 \frac{
-\ln(100/100)+(0.05+0.5(0.20)^2)
+\ln(100/100)
++
+\left(
+0.05+\frac{1}{2}(0.20)^2
+\right)
 }{
 0.20
 }
-]
+$$
 
 and
 
-[
-d_2=d_1-0.20.
-]
+$$
+d_2
+===
 
-The Monte Carlo estimate should fluctuate around the analytical value, with the magnitude of the fluctuations decreasing as the number of simulations increases.
+d_1-0.20.
+$$
+
+The Monte Carlo estimate should fluctuate around the Black–Scholes value, with the magnitude of the fluctuations decreasing as $N$ increases.
 
 ---
 
 # Interpreting the Results
 
-The primary output of the model is the estimated call price.
-
-A typical validation table can be structured as follows:
+A useful validation table is:
 
 | Number of simulations | Monte Carlo price | Black–Scholes price | Absolute error |
 | --------------------: | ----------------: | ------------------: | -------------: |
-|                 1,000 |               ... |                 ... |            ... |
-|                10,000 |               ... |                 ... |            ... |
-|               100,000 |               ... |                 ... |            ... |
-|             1,000,000 |               ... |                 ... |            ... |
+|               $1,000$ |               ... |                 ... |            ... |
+|              $10,000$ |               ... |                 ... |            ... |
+|             $100,000$ |               ... |                 ... |            ... |
+|           $1,000,000$ |               ... |                 ... |            ... |
 
-The exact values depend on the random seed and implementation.
+A correct implementation should demonstrate that:
 
-A good implementation should demonstrate that:
-
-1. The Monte Carlo estimator approaches the Black–Scholes value.
-2. The error decreases approximately at the (N^{-1/2}) rate.
-3. Independent simulations produce slightly different estimates.
-4. The differences are consistent with Monte Carlo statistical error.
-5. The PDE solution approaches the same price as its numerical grid is refined.
+1. The Monte Carlo estimate approaches the Black–Scholes value.
+2. The statistical error decreases approximately as $N^{-1/2}$.
+3. Different random seeds produce slightly different estimates.
+4. Those differences are consistent with the estimated standard error.
+5. The PDE solution converges toward the same price as the numerical grid is refined.
 
 ---
 
 # Random Seeds and Reproducibility
 
-Monte Carlo methods depend on pseudorandom number generation.
+Monte Carlo simulations depend on pseudorandom number generation.
 
-For reproducible experiments, explicitly specify a random seed.
+For reproducible experiments, a random seed should be explicitly specified.
 
 For example:
 
@@ -961,293 +1124,310 @@ For example:
 rng = np.random.default_rng(42)
 ```
 
-Using a fixed seed ensures that repeated executions generate the same random sequence.
+A fixed seed is useful for:
 
-However, a fixed seed should primarily be used for:
+* debugging;
+* automated testing;
+* reproducible demonstrations;
+* regression tests.
 
-* testing,
-* debugging,
-* reproducible demonstrations,
-* regression experiments.
-
-For statistical analysis, it is often useful to repeat the pricing experiment using multiple independent seeds.
-
-This allows the distribution of the estimator itself to be studied.
+For statistical experiments, it can also be useful to run the simulation under multiple independent seeds and examine the resulting distribution of the estimator.
 
 ---
 
 # Numerical Considerations
 
-## Exact Simulation of GBM
+## Exact Simulation of Geometric Brownian Motion
 
-For European options under constant Black–Scholes parameters, the terminal asset price can be sampled exactly using
+For a European option under the standard Black–Scholes assumptions, the terminal asset price can be sampled exactly:
 
-[
-S_T =
+$$
+S_T
+===
+
 S_0
 \exp
 \left[
-(r-\frac12\sigma^2)T
+\left(
+r-\frac{1}{2}\sigma^2
+\right)T
 +
 \sigma\sqrt{T}Z
 \right].
-]
+$$
 
-There is no need to use Euler–Maruyama for this particular problem.
+There is therefore no need to use an Euler–Maruyama discretization when only the terminal asset price is required.
 
-This is important because Euler discretization introduces an additional numerical error that is unnecessary when only the terminal value is required.
-
----
-
-## Floating-Point Precision
-
-The implementation should use standard floating-point arithmetic carefully.
-
-Potential numerical issues include:
-
-* extremely large or small exponential arguments;
-* very short maturities;
-* extremely high volatility;
-* deep in-the-money or out-of-the-money options;
-* extreme values of (S_0/K).
-
-For ordinary parameter ranges, double precision is more than adequate.
+This is advantageous because numerical time discretization would introduce an additional source of error.
 
 ---
 
 ## Vectorization
 
-Monte Carlo pricing is naturally vectorizable.
-
-Rather than evaluating each simulation in a Python loop, a numerical computing library can generate a vector of normal random variables and operate on the entire array.
+Monte Carlo simulation is highly amenable to vectorized computation.
 
 Conceptually:
 
 ```text
-Z = [Z1, Z2, ..., ZN]
-
-        ↓
-
-ST = S0 * exp(... + sigma * sqrt(T) * Z)
-
-        ↓
-
-payoff = max(ST - K, 0)
-
-        ↓
-
-price = exp(-r*T) * mean(payoff)
+Z
+│
+├── Z₁
+├── Z₂
+├── ...
+└── Zₙ
+     │
+     ▼
+Terminal asset prices
+     │
+     ▼
+Option payoffs
+     │
+     ▼
+Mean payoff
+     │
+     ▼
+Discounted option price
 ```
 
-Vectorization can provide a substantial performance improvement for large simulation counts.
+A numerical library such as NumPy can process the entire simulation array without requiring an explicit Python-level loop over every path.
+
+This becomes important when $N$ is large.
 
 ---
 
-# Monte Carlo Variance Reduction
+## Floating-Point Considerations
 
-The basic implementation uses ordinary Monte Carlo sampling.
+Extreme parameter values can cause numerical issues.
 
-For more demanding applications, the estimator can be improved through variance-reduction techniques.
+Potential problems include:
+
+* very large exponential arguments;
+* extremely small maturities;
+* extremely large volatility;
+* very deep in-the-money options;
+* very deep out-of-the-money options;
+* extreme values of $S_0/K$.
+
+For ordinary financial parameter ranges, double-precision floating-point arithmetic is generally sufficient.
+
+---
+
+# Variance Reduction
+
+The basic Monte Carlo implementation uses independent random samples.
+
+For larger pricing problems, variance-reduction techniques can substantially improve efficiency.
 
 ## Antithetic Variates
 
-For every sampled
+For every sample
 
-[
+$$
 Z_i,
-]
+$$
 
 also use
 
-[
+$$
 -Z_i.
-]
+$$
 
-This preserves the marginal distribution while introducing negative dependence between paired samples.
-
-The paired estimator can reduce variance for many option-pricing problems.
+The two samples have the same marginal distribution but can reduce the variance of the estimator when used appropriately.
 
 ---
 
 ## Control Variates
 
-A control variate uses another random variable whose expectation is known analytically.
+A control variate uses a random quantity whose expectation is known analytically.
 
-For example, the simulated underlying terminal price satisfies
+Under the risk-neutral measure,
 
-[
-\mathbb E^Q[S_T]=S_0e^{rT}.
-]
+$$
+\mathbb{E}^Q[S_T]
+=================
+
+S_0e^{rT}.
+$$
 
 Therefore,
 
-[
-e^{-rT}S_T
-]
+$$
+\mathbb{E}^Q[e^{-rT}S_T]
+========================
 
-has known expectation (S_0).
+S_0.
+$$
 
-This known expectation can be used to construct a control-variate estimator for the call price.
+This known expectation can be used to construct a control-variate estimator.
 
 ---
 
 ## Importance Sampling
 
-For rare-event pricing problems, standard Monte Carlo may spend most of its simulations in regions contributing little to the payoff.
+For rare-event problems, standard Monte Carlo can be inefficient because most simulations may contribute little to the payoff.
 
-Importance sampling changes the sampling distribution so that more simulations occur in important regions, while correcting for the change of measure.
-
-This can substantially improve efficiency for deep out-of-the-money options and other rare-event problems.
+Importance sampling modifies the sampling distribution so that more simulations occur in relevant regions, while applying the appropriate likelihood correction.
 
 ---
 
 ## Quasi-Monte Carlo
 
-Instead of pseudorandom samples, quasi-Monte Carlo methods use low-discrepancy sequences such as:
+Quasi-Monte Carlo replaces pseudorandom samples with low-discrepancy sequences.
 
-* Sobol sequences,
-* Halton sequences,
+Examples include:
+
+* Sobol sequences;
+* Halton sequences;
 * Faure sequences.
 
-These methods can provide significantly better convergence in some pricing problems.
+These can improve convergence for certain classes of numerical integration problems.
 
 ---
 
 # Why Monte Carlo Is Useful
 
-The closed-form Black–Scholes formula is preferable when it is available because it is fast and accurate.
+The Black–Scholes formula is preferable when a closed-form solution exists because it is both fast and accurate.
 
-Monte Carlo becomes particularly useful when the derivative has features that make analytical solutions difficult or impossible.
+Monte Carlo becomes substantially more useful when the payoff or underlying model becomes more complicated.
 
 Examples include:
 
-* path-dependent payoffs;
 * Asian options;
 * barrier options;
 * basket options;
+* multi-asset derivatives;
 * stochastic volatility;
 * stochastic interest rates;
-* multiple correlated assets;
+* jump-diffusion models;
 * high-dimensional derivatives.
 
-Therefore, this project is best viewed not as an attempt to replace Black–Scholes, but as an introduction to a much more general computational pricing methodology.
+The purpose of this project is therefore not to replace the Black–Scholes formula, but to demonstrate a computational technique that generalizes to situations where analytical formulas are unavailable.
 
 ---
 
 # Limitations
 
-The model intentionally makes strong assumptions.
+The model deliberately makes strong assumptions.
 
 ## Constant Volatility
 
 The Black–Scholes model assumes
 
-[
+$$
 \sigma=\text{constant}.
-]
+$$
 
-Real markets exhibit volatility smiles and skews, meaning implied volatility depends on strike and maturity.
+Real markets exhibit volatility smiles and skews, meaning that implied volatility varies across strike prices and maturities.
 
 ---
 
 ## Constant Interest Rate
 
-The model assumes a deterministic constant risk-free rate.
+The model assumes that the risk-free rate is deterministic and constant.
 
-Real interest rates evolve over time.
+Real interest rates are stochastic.
 
 ---
 
-## Lognormal Asset Dynamics
+## Lognormal Price Dynamics
 
-The model assumes that the asset follows geometric Brownian motion.
+The underlying is assumed to follow geometric Brownian motion.
 
-This excludes effects such as:
+This excludes:
 
-* jumps,
-* stochastic volatility,
-* discontinuous price movements,
-* heavy tails,
-* volatility clustering.
+* jumps;
+* stochastic volatility;
+* volatility clustering;
+* heavy tails;
+* discontinuous price movements.
 
 ---
 
 ## Frictionless Markets
 
-The classical model assumes no:
+The theoretical model assumes no:
 
-* transaction costs,
-* bid/ask spreads,
-* liquidity constraints,
+* transaction costs;
+* bid/ask spreads;
+* liquidity constraints;
 * taxes.
 
 ---
 
 ## Continuous Trading
 
-The theoretical derivation assumes continuous rebalancing.
+The classical Black–Scholes derivation assumes continuous portfolio rebalancing.
 
-Real portfolios are rebalanced discretely.
+Real trading occurs at discrete times and incurs market frictions.
 
 ---
 
 ## No Dividends
 
-The basic formulation assumes the underlying does not pay dividends.
+The basic formulation assumes that the underlying pays no dividends.
 
-For a continuously compounded dividend yield (q), the Black–Scholes call price becomes
+For a continuous dividend yield $q$, the Black–Scholes call price becomes
 
-[
+$$
 C_0
 ===
 
 ## S_0e^{-qT}N(d_1)
 
 Ke^{-rT}N(d_2),
-]
+$$
 
-with
+where
 
-[
-d_1=
+$$
+d_1
+===
+
 \frac{
-\ln(S_0/K)
+\ln\left(\frac{S_0}{K}\right)
 +
-(r-q+\frac12\sigma^2)T
+\left(
+r-q+\frac{1}{2}\sigma^2
+\right)T
 }{
-\sigma\sqrt T
+\sigma\sqrt{T}
 }.
-]
+$$
 
-The risk-neutral asset dynamics also become
+The risk-neutral asset dynamics become
 
-[
-dS_t=(r-q)S_tdt+\sigma S_tdW_t.
-]
+$$
+dS_t
+====
+
+(r-q)S_t,dt
++
+\sigma S_t,dW_t^Q.
+$$
 
 ---
 
 # PDE Numerical Methods
 
-A numerical PDE implementation typically discretizes
+A numerical PDE implementation typically defines a computational domain
 
-[
+$$
 S\in[0,S_{\max}]
-]
+$$
 
 and
 
-[
+$$
 t\in[0,T].
-]
+$$
 
-The spatial dimension can be divided into (M) grid points and time into (L) time steps.
+The asset-price dimension can be discretized into $M$ spatial grid points, while the time dimension can be divided into $L$ time steps.
 
 Common finite-difference schemes include:
 
 ### Explicit Euler
 
-Simple to implement, but subject to stability restrictions.
+Simple to implement, but subject to stability constraints.
 
 ### Implicit Euler
 
@@ -1255,172 +1435,205 @@ More stable, but requires solving a linear system at every time step.
 
 ### Crank–Nicolson
 
-A commonly used scheme combining explicit and implicit discretization.
+A commonly used scheme that combines explicit and implicit discretization and generally provides improved accuracy.
 
-The numerical PDE price should converge toward the analytical Black–Scholes price as the grid is refined, assuming the boundary conditions and numerical scheme are implemented correctly.
+The PDE solution should converge toward the analytical Black–Scholes price as the numerical grid is refined, assuming the boundary conditions and numerical scheme are implemented correctly.
 
 ---
 
 # Recommended Validation Tests
 
-A robust implementation should test more than one parameter configuration.
+A robust implementation should test multiple parameter configurations.
 
-## Test 1 — At-the-money call
+## At-the-Money Call
 
-[
+Set
+
+$$
 S_0=K.
-]
+$$
 
-This is a standard baseline case.
+This provides a standard baseline.
 
-## Test 2 — In-the-money call
+## In-the-Money Call
 
-[
+Set
+
+$$
 S_0>K.
-]
+$$
 
-The option should have substantial intrinsic value.
+The option should have significant intrinsic value.
 
-## Test 3 — Out-of-the-money call
+## Out-of-the-Money Call
 
-[
+Set
+
+$$
 S_0<K.
-]
+$$
 
-The price should be lower and the Monte Carlo estimator may require more simulations for a given relative precision.
+The option price should be lower, and relative Monte Carlo error may become more significant.
 
-## Test 4 — Short maturity
+## Short Maturity
 
-Use a small (T) to test numerical behavior close to expiration.
+Use a small $T$ to test behavior close to expiration.
 
-## Test 5 — High volatility
+## High Volatility
 
-Increase (\sigma) to verify that the implementation behaves correctly under more dispersed terminal distributions.
+Increase $\sigma$ to verify behavior under a more dispersed terminal distribution.
 
-## Test 6 — Monte Carlo convergence
+## Monte Carlo Convergence
 
-Increase (N) systematically and verify the expected
+Increase $N$ systematically and verify approximately
 
-[
-O(N^{-1/2})
-]
+$$
+\text{error}\propto N^{-1/2}.
+$$
 
-convergence rate.
+## PDE Grid Convergence
 
-## Test 7 — PDE grid convergence
-
-Increase the number of spatial and temporal grid points and verify convergence toward Black–Scholes.
+Increase the spatial and temporal resolution and verify convergence toward the Black–Scholes benchmark.
 
 ---
 
 # Financial Sanity Checks
 
-The implementation should satisfy basic option-pricing properties.
+The implementation should satisfy basic no-arbitrage properties.
 
 For a European call without dividends,
 
-[
-C\geq0.
-]
+$$
+C_0\geq0.
+$$
 
-Also,
+The standard lower bound is
 
-[
-C\geq\max(S_0-Ke^{-rT},0)
-]
-
-under standard no-arbitrage assumptions.
+$$
+\boxed{
+C_0
+\geq
+\max
+\left(
+S_0-Ke^{-rT},
+0
+\right)
+}
+$$
 
 The call price should generally:
 
-* increase with (S_0);
-* increase with (\sigma);
-* increase with (T) under standard conditions;
-* decrease with (K);
-* decrease as (r) increases for a non-dividend-paying call, subject to the usual interpretation of the model.
+* increase as $S_0$ increases;
+* increase as $\sigma$ increases;
+* decrease as $K$ increases;
+* generally increase with maturity under standard assumptions;
+* decrease as the strike becomes more expensive relative to the underlying.
 
-These relationships provide useful tests for detecting implementation errors.
+These properties provide useful diagnostic tests.
 
 ---
 
 # Greeks
 
-Once an option-pricing engine exists, the next natural extension is calculating the option Greeks.
+Once an option-pricing engine has been implemented, the next natural extension is the computation of the option Greeks.
 
 For a European call without dividends:
 
 ### Delta
 
-[
+$$
+\boxed{
 \Delta=N(d_1)
-]
+}
+$$
 
 ### Gamma
 
-[
-\Gamma=
-\frac{\phi(d_1)}
-{S_0\sigma\sqrt T}
-]
+$$
+\boxed{
+\Gamma
+======
+
+\frac{
+\phi(d_1)
+}{
+S_0\sigma\sqrt{T}
+}
+}
+$$
 
 ### Vega
 
-[
-\nu=
-S_0\phi(d_1)\sqrt T
-]
+$$
+\boxed{
+\nu
+===
+
+S_0\phi(d_1)\sqrt{T}
+}
+$$
 
 ### Theta
 
-[
+$$
+\boxed{
 \Theta
 ======
 
 -\frac{
 S_0\phi(d_1)\sigma
 }{
-2\sqrt T
+2\sqrt{T}
 }
--rKe^{-rT}N(d_2)
-]
+-
+
+rKe^{-rT}N(d_2)
+}
+$$
 
 ### Rho
 
-[
-\rho=
-KTe^{-rT}N(d_2).
-]
+$$
+\boxed{
+\rho
+====
 
-Here,
+KTe^{-rT}N(d_2)
+}
+$$
 
-[
-\phi(x)=
+where $\phi(\cdot)$ is the standard normal probability density function:
+
+$$
+\phi(x)
+=======
+
 \frac{1}{\sqrt{2\pi}}
-e^{-x^2/2}
-]
+e^{-x^2/2}.
+$$
 
-is the standard normal probability density function.
+Monte Carlo Greeks can be estimated using techniques such as:
 
-For Monte Carlo, Greeks can be estimated using techniques such as:
-
-* finite differences,
-* pathwise derivatives,
-* likelihood-ratio methods,
+* finite differences;
+* pathwise derivatives;
+* likelihood-ratio methods;
 * automatic differentiation.
 
 ---
 
 # Performance Considerations
 
-Monte Carlo pricing is computationally simple but potentially expensive because accuracy improves slowly.
+Monte Carlo pricing is computationally simple but can become expensive because convergence is slow.
 
-If
+The key scaling relationship is
 
-[
-N=10^6,
-]
+$$
+\operatorname{SE}
+\propto
+\frac{1}{\sqrt{N}}.
+$$
 
-then one million terminal asset prices must be generated and processed.
+Consequently, increasing the number of simulations by a factor of $100$ only improves the statistical error by approximately a factor of $10$.
 
 Performance can be improved through:
 
@@ -1430,160 +1643,205 @@ Performance can be improved through:
 * compiled numerical kernels;
 * GPU acceleration;
 * variance reduction;
-* quasi-Monte Carlo sampling.
-
-The primary bottleneck is generally the number of simulations rather than the complexity of each individual simulation.
+* quasi-Monte Carlo.
 
 ---
 
-# Reproducible Experiment Design
+# Common Implementation Errors
 
-For meaningful numerical experiments, record:
+Several mistakes are particularly common in Monte Carlo implementations.
 
-* model parameters;
-* number of simulations;
-* random seed;
-* Monte Carlo estimate;
-* sample standard deviation;
-* standard error;
-* confidence interval;
-* Black–Scholes benchmark;
-* absolute error;
-* relative error;
-* execution time.
+## Using the Physical Drift
 
-A useful experiment table is:
+The risk-neutral simulation should use $r$, not the historical expected return $\mu$:
 
-|       (N) | MC Price | BS Price | Error | Standard Error | Runtime |
-| --------: | -------: | -------: | ----: | -------------: | ------: |
-|     1,000 |      ... |      ... |   ... |            ... |     ... |
-|    10,000 |      ... |      ... |   ... |            ... |     ... |
-|   100,000 |      ... |      ... |   ... |            ... |     ... |
-| 1,000,000 |      ... |      ... |   ... |            ... |     ... |
-
-This makes the numerical behavior of the estimator directly observable.
+$$
+dS_t=rS_t,dt+\sigma S_t,dW_t^Q.
+$$
 
 ---
 
-# Mathematical Interpretation
+## Omitting the Itô Correction
 
-The project illustrates an important connection between stochastic processes, numerical analysis, and mathematical finance.
+The exact GBM solution contains
 
-Starting from the risk-neutral stochastic differential equation,
+$$
+-\frac{1}{2}\sigma^2T.
+$$
 
-[
-dS_t=rS_tdt+\sigma S_tdW_t,
-]
+The correct expression is
 
-the derivative value is
+$$
+S_T
+===
 
-[
-C(S,t)
-======
-
-\mathbb E^Q
+S_0
+\exp
 \left[
-e^{-r(T-t)}
-\Phi(S_T)
-\mid S_t=S
-\right],
-]
+\left(
+r-\frac12\sigma^2
+\right)T
++
+\sigma\sqrt{T}Z
+\right].
+$$
 
-where
+Omitting the $-\frac12\sigma^2$ term produces the wrong distribution.
 
-[
-\Phi(S_T)=\max(S_T-K,0).
-]
+---
 
-The Feynman–Kac theorem establishes that this conditional expectation corresponds to the solution of the Black–Scholes PDE.
+## Forgetting Discounting
 
-Thus,
+The expected payoff is not the current option price.
 
-[
-\boxed{
-\text{SDE}
-\longleftrightarrow
-\text{Risk-Neutral Expectation}
-\longleftrightarrow
-\text{PDE}
-}
-]
+The price is
 
-The project numerically explores this equivalence from three directions:
+$$
+C_0
+===
 
-```text
-                 Geometric Brownian Motion
-                          │
-                          ▼
-                 Risk-Neutral Distribution
-                          │
-                          ▼
-                    Monte Carlo
-                          │
-                          ▼
-                    Option Price
-                          ▲
-                          │
-          ┌───────────────┴───────────────┐
-          │                               │
-          │                               │
-  Black–Scholes Formula            Black–Scholes PDE
-   Analytical Solution             Numerical Solution
-```
+e^{-rT}
+\mathbb{E}^Q[\text{payoff}].
+$$
 
-Agreement among the three methods provides strong evidence that the implementation is mathematically consistent.
+---
+
+## Using $T$ Instead of $\sqrt{T}$
+
+The stochastic term is
+
+$$
+\sigma\sqrt{T}Z,
+$$
+
+not
+
+$$
+\sigma TZ.
+$$
+
+---
+
+## Confusing Volatility and Variance
+
+Volatility is
+
+$$
+\sigma,
+$$
+
+while variance is
+
+$$
+\sigma^2.
+$$
+
+---
+
+## Treating Monte Carlo Error as Deterministic
+
+Two Monte Carlo runs with different random seeds will generally produce different estimates.
+
+This is expected.
+
+The correct approach is to report an estimated standard error or confidence interval.
+
+---
+
+# Testing Strategy
+
+A robust implementation should include automated tests.
+
+## Analytical Tests
+
+Verify the Black–Scholes implementation against known benchmark values.
+
+## Monte Carlo Tests
+
+Use a fixed seed and verify that the estimated price falls within a reasonable tolerance.
+
+Because Monte Carlo is stochastic, exact floating-point equality should generally not be expected.
+
+## PDE Tests
+
+Verify convergence as the spatial and temporal grids are refined.
+
+## Financial Property Tests
+
+Verify properties such as:
+
+$$
+C_0\geq0
+$$
+
+and appropriate monotonicity with respect to model parameters.
+
+## Cross-Method Tests
+
+For a given parameter configuration, verify that
+
+$$
+C_{\mathrm{MC}}
+\approx
+C_{\mathrm{BS}}
+\approx
+C_{\mathrm{PDE}}.
+$$
+
+The tolerance for the Monte Carlo comparison should be based on its statistical uncertainty.
 
 ---
 
 # Possible Extensions
 
-The current model provides a natural foundation for substantially more sophisticated research and engineering work.
+The current implementation provides a foundation for more advanced quantitative-finance work.
 
-## 1. Dividend-paying assets
+## Dividend-Paying Assets
 
-Add a continuous dividend yield (q).
+Extend the model to include a continuous dividend yield $q$.
 
----
+## European Put Options
 
-## 2. Put options
+Implement the payoff
 
-Implement
+$$
+P_T
+===
 
-[
-P_T=\max(K-S_T,0).
-]
+\max(K-S_T,0).
+$$
 
-The European put price can be obtained from
+The analytical price is
 
-[
-P_0=
-Ke^{-rT}N(-d_2)
----------------
+$$
+P_0
+===
+
+## Ke^{-rT}N(-d_2)
 
 S_0N(-d_1).
-]
+$$
 
 The implementation can also be validated using put-call parity:
 
-[
+$$
 \boxed{
-C-P=S_0-Ke^{-rT}
+C_0-P_0
+=======
+
+S_0-Ke^{-rT}
 }
-]
+$$
 
 for a non-dividend-paying underlying.
 
----
+## Asian Options
 
-## 3. Asian options
-
-Asian options depend on the average asset price over the life of the option.
+Asian options depend on the average underlying price over the life of the contract.
 
 Monte Carlo becomes particularly useful because the payoff depends on the entire simulated path.
 
----
-
-## 4. Barrier options
+## Barrier Options
 
 Examples include:
 
@@ -1594,193 +1852,201 @@ Examples include:
 
 These require monitoring the simulated asset path rather than only its terminal value.
 
----
+## Stochastic Volatility
 
-## 5. Stochastic volatility
+Replace constant volatility with a stochastic process, such as the Heston model.
 
-Replace constant volatility with a stochastic process.
+## Jump-Diffusion
 
-Examples include:
+Introduce discontinuous price movements using a jump-diffusion model such as Merton's model.
 
-* Heston model;
-* SABR model;
-* local volatility models.
-
----
-
-## 6. Jump-diffusion models
-
-Introduce discontinuous price movements using models such as Merton's jump-diffusion model.
-
----
-
-## 7. American options
+## American Options
 
 American options can be exercised before maturity.
 
-Monte Carlo pricing becomes substantially more complicated because the problem involves optimal stopping.
+Monte Carlo pricing then becomes an optimal-stopping problem.
 
-Methods such as:
+Methods such as Longstaff–Schwartz least-squares Monte Carlo can be investigated.
 
-* Longstaff–Schwartz regression,
-* least-squares Monte Carlo,
-* stochastic mesh methods
+## Calibration
 
-can be investigated.
+Instead of assuming a volatility value, calibrate the model to observed market option prices or implied volatilities.
 
----
+This would turn the project into a more realistic quantitative-finance calibration framework.
 
-## 8. Automatic differentiation
+## GPU Acceleration
 
-Automatic differentiation can be used to calculate sensitivities through the computational pricing graph.
+Monte Carlo is highly parallelizable, making GPU implementations particularly attractive for large simulation workloads.
 
 ---
 
-## 9. GPU acceleration
+# Reproducible Experiment Design
 
-Large Monte Carlo workloads are highly parallelizable and can be accelerated using GPU frameworks.
+For meaningful numerical experiments, record:
+
+* model parameters;
+* number of simulations;
+* random seed;
+* Monte Carlo price;
+* sample standard deviation;
+* standard error;
+* confidence interval;
+* Black–Scholes benchmark;
+* absolute error;
+* relative error;
+* execution time.
+
+A useful experiment table is:
+
+|         $N$ | Monte Carlo Price | Black–Scholes Price | Absolute Error | Standard Error | Runtime |
+| ----------: | ----------------: | ------------------: | -------------: | -------------: | ------: |
+|     $1,000$ |               ... |                 ... |            ... |            ... |     ... |
+|    $10,000$ |               ... |                 ... |            ... |            ... |     ... |
+|   $100,000$ |               ... |                 ... |            ... |            ... |     ... |
+| $1,000,000$ |               ... |                 ... |            ... |            ... |     ... |
+
+This makes the convergence behavior of the estimator directly observable.
 
 ---
 
-## 10. Calibration
+# Mathematical Interpretation
 
-Rather than assuming volatility, the model can be calibrated to observed market option prices or implied volatilities.
+The project illustrates an important connection between stochastic processes, numerical analysis, and mathematical finance.
 
-This would transform the project from a purely theoretical pricing exercise into a basic quantitative-finance calibration framework.
+Starting from the risk-neutral stochastic differential equation,
 
----
+$$
+dS_t
+====
 
-# Common Implementation Errors
-
-Several mistakes are particularly common in Monte Carlo implementations.
-
-### Using the physical drift (\mu)
-
-For risk-neutral pricing, the simulation should use
-
-[
-r
-]
-
-rather than an estimated historical expected return (\mu).
-
----
-
-### Forgetting the (-\frac12\sigma^2) term
-
-The correct exact GBM expression is
-
-[
-S_T=
-S_0
-e^{
-(r-\frac12\sigma^2)T
+rS_t,dt
 +
-\sigma\sqrt{T}Z
-}.
-]
+\sigma S_t,dW_t^Q,
+$$
 
-Leaving out the correction term produces an incorrect lognormal distribution.
+the derivative value is
 
----
+$$
+C(S,t)
+======
 
-### Forgetting discounting
+\mathbb{E}^Q
+\left[
+e^{-r(T-t)}
+\Phi(S_T)
+\mid S_t=S
+\right],
+$$
 
-The expected payoff is not itself the present option price.
+where
 
-The discounted estimator is
+$$
+\Phi(S_T)
+=========
 
-[
-e^{-rT}\mathbb E^Q[\text{payoff}].
-]
+\max(S_T-K,0).
+$$
 
----
+The Feynman–Kac theorem establishes that this conditional expectation corresponds to the solution of the Black–Scholes PDE.
 
-### Using (T) instead of (\sqrt T)
+Thus,
 
-The stochastic component is
+$$
+\boxed{
+\text{SDE}
+\quad
+\longleftrightarrow
+\quad
+\text{Risk-Neutral Expectation}
+\quad
+\longleftrightarrow
+\quad
+\text{PDE}
+}
+$$
 
-[
-\sigma\sqrt T Z,
-]
-
-not
-
-[
-\sigma TZ.
-]
-
----
-
-### Confusing volatility and variance
-
-The model parameter (\sigma) is volatility.
-
-The variance is
-
-[
-\sigma^2.
-]
-
----
-
-### Treating Monte Carlo error as deterministic
-
-Two runs with different random seeds will generally produce different estimates.
-
-That is expected behavior.
-
-The estimator should therefore be accompanied by a standard error or confidence interval.
+The three numerical approaches can therefore be viewed as different computational representations of the same mathematical problem.
 
 ---
 
-# Testing Strategy
+# Computational Workflow
 
-A production-quality implementation should include automated tests.
+The complete workflow can be summarized as:
 
-### Analytical tests
+```text
+Model Parameters
+      │
+      ├── S₀
+      ├── K
+      ├── T
+      ├── r
+      └── σ
+      │
+      ▼
+Risk-Neutral GBM
+      │
+      ▼
+Generate Z ~ N(0, 1)
+      │
+      ▼
+Simulate S_T
+      │
+      ▼
+Calculate Payoffs
+      │
+      ▼
+Discount and Average
+      │
+      ▼
+Monte Carlo Price
+      │
+      ├──────────────────┐
+      │                  │
+      ▼                  ▼
+Black–Scholes       Black–Scholes
+Closed Form             PDE
+      │                  │
+      └────────┬─────────┘
+               ▼
+          Validation
+               │
+               ▼
+      Error / Convergence
+```
 
-Verify the Black–Scholes implementation against known benchmark values.
+---
 
-### Monte Carlo tests
+# References
 
-Use a fixed random seed and verify that the output falls within a reasonable numerical tolerance.
+The theoretical foundation of this project comes from the following areas of mathematical finance:
 
-Because Monte Carlo is stochastic, tests should generally avoid unnecessarily strict equality checks.
+1. **Black, F. and Scholes, M.**
+   *The Pricing of Options and Corporate Liabilities*.
+   Journal of Political Economy, 1973.
 
-### PDE tests
+2. **Merton, R. C.**
+   *Theory of Rational Option Pricing*.
+   Bell Journal of Economics and Management Science, 1973.
 
-Verify convergence as the grid is refined.
+3. **Hull, J. C.**
+   *Options, Futures, and Other Derivatives*.
 
-### Property tests
+4. **Glasserman, P.**
+   *Monte Carlo Methods in Financial Engineering*.
 
-Check financial relationships such as:
+5. **Shreve, S. E.**
+   *Stochastic Calculus for Finance II: Continuous-Time Models*.
 
-[
-C\geq0
-]
+6. **Wilmott, P.**
+   *Paul Wilmott on Quantitative Finance*.
 
-and monotonicity with respect to key parameters.
-
-### Cross-method tests
-
-For a given parameter set, verify that
-
-[
-C_{\mathrm{MC}}
-\approx
-C_{\mathrm{BS}}
-\approx
-C_{\mathrm{PDE}}.
-]
-
-The tolerance for the Monte Carlo comparison should be based on its estimated statistical uncertainty rather than an arbitrary deterministic threshold.
+These references cover the stochastic calculus, risk-neutral valuation, Monte Carlo methods, derivative pricing, and PDE formulations used throughout the project.
 
 ---
 
 # Disclaimer
 
-This repository is an **educational and computational project** demonstrating numerical option pricing techniques.
+This repository is an **educational and computational project** demonstrating numerical option-pricing techniques.
 
 It should not be interpreted as:
 
@@ -1790,27 +2056,15 @@ It should not be interpreted as:
 * a source of market forecasts;
 * a substitute for professional quantitative-risk infrastructure.
 
-The Black–Scholes model is a deliberately simplified model of financial markets, and its assumptions do not fully describe real-world asset dynamics.
+The Black–Scholes model is a deliberately simplified representation of financial markets, and its assumptions do not fully describe real-world asset dynamics.
 
 ---
 
-# References
+# License
 
-The following topics provide the theoretical foundation for the project:
+This project is released under the license specified in the repository.
 
-1. **Black, F. and Scholes, M.** — *The Pricing of Options and Corporate Liabilities*, Journal of Political Economy, 1973.
-
-2. **Merton, R. C.** — *Theory of Rational Option Pricing*, Bell Journal of Economics and Management Science, 1973.
-
-3. **Hull, J. C.** — *Options, Futures, and Other Derivatives*.
-
-4. **Glasserman, P.** — *Monte Carlo Methods in Financial Engineering*.
-
-5. **Shreve, S. E.** — *Stochastic Calculus for Finance II: Continuous-Time Models*.
-
-6. **Wilmott, P.** — *Paul Wilmott on Quantitative Finance*.
-
-These references cover the stochastic calculus, risk-neutral valuation, Monte Carlo methods, derivative pricing, and PDE formulations underlying the implementation.
+If no license has yet been selected, consider adding an explicit open-source license such as the MIT License before distributing the project publicly.
 
 ---
 
@@ -1818,7 +2072,7 @@ These references cover the stochastic calculus, risk-neutral valuation, Monte Ca
 
 This project implements a fundamental quantitative-finance workflow:
 
-[
+$$
 \boxed{
 \text{Model}
 \rightarrow
@@ -1828,50 +2082,83 @@ This project implements a fundamental quantitative-finance workflow:
 \rightarrow
 \text{Validate}
 }
-]
+$$
 
 The underlying asset is modeled using geometric Brownian motion under the risk-neutral measure:
 
-[
-dS_t=rS_tdt+\sigma S_tdW_t.
-]
+$$
+dS_t
+====
+
+rS_t,dt
++
+\sigma S_t,dW_t^Q.
+$$
 
 The European call price is estimated using Monte Carlo:
 
-[
+$$
 \boxed{
-\hat C_N=
+\hat{C}_N
+=========
+
 e^{-rT}
-\frac1N
-\sum_{i=1}^N
-\max(S_T^{(i)}-K,0)
+\frac{1}{N}
+\sum_{i=1}^{N}
+\max
+\left(
+S_T^{(i)}-K,
+0
+\right)
 }
-]
+$$
 
 and validated against the analytical Black–Scholes formula:
 
-[
+$$
 \boxed{
-C_0=S_0N(d_1)-Ke^{-rT}N(d_2)
+C_0
+===
+
+## S_0N(d_1)
+
+Ke^{-rT}N(d_2)
 }
-]
+$$
 
 as well as the Black–Scholes PDE:
 
-[
+$$
 \boxed{
-C_t+
-\frac12\sigma^2S^2C_{SS}
-+rSC_S-rC=0.
+\frac{\partial C}{\partial t}
++
+\frac{1}{2}\sigma^2S^2
+\frac{\partial^2 C}{\partial S^2}
++
+rS\frac{\partial C}{\partial S}
+-------------------------------
+
+# rC
+
+0.
+
 }
-]
+$$
 
-The central numerical lesson is that Monte Carlo pricing is a **statistical estimation problem**. Its accuracy improves as the number of simulations increases, with the characteristic convergence rate
+The central numerical result is that Monte Carlo pricing is a **statistical estimation problem** whose standard error decreases at the rate
 
-[
-O(N^{-1/2}).
-]
+$$
+O\left(N^{-1/2}\right).
+$$
 
-The central mathematical lesson is that the **stochastic, analytical, and PDE formulations are different representations of the same derivative-pricing problem**.
+The central mathematical result is that the **stochastic, analytical, and PDE formulations are different representations of the same derivative-pricing problem**.
 
-This makes the project a useful foundation for studying computational finance, stochastic differential equations, numerical PDEs, statistical estimation, and quantitative risk.
+This makes the project a useful foundation for studying:
+
+* computational finance;
+* stochastic differential equations;
+* Monte Carlo methods;
+* numerical PDEs;
+* statistical estimation;
+* quantitative risk;
+* derivative pricing.
