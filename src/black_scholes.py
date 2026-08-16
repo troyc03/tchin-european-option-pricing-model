@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 class BlackScholes:
     pass
 
+class BlackScholesPDE:
+    pass
+
 def main():
     pass
 
