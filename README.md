@@ -51,10 +51,7 @@ $$
 The analytical price of a European call is
 
 $$
-C =
-S_0N(d_1)
--
-Ke^{-rT}N(d_2),
+C = S_0N(d_1)-Ke^{-rT}N(d_2),
 $$
 
 where
