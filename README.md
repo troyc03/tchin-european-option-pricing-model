@@ -85,12 +85,7 @@ $$
 
 The Black–Scholes PDE is
 
-$$
-\frac{\partial C}{\partial t}
-+ \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 C}{\partial S^2}
-+ rS \frac{\partial C}{\partial S}
-- rC = 0.
-$$
+$$\frac{\partial C}{\partial t} + \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 C}{\partial S^2} + rS \frac{\partial C}{\partial S} - rC = 0.$$
 The terminal condition is
 
 $$
