@@ -1,45 +1,45 @@
 import numpy as np
 
-def parameter_estimation_mle(prices, dt):
+def estimate_gbm_parameters(prices, dt):
     """
-    Parameter estimation of Black-Scholes model
-    using Maximum Likelihood Estimation.
+    Estimates the drift (mu) and volatility (sigma) parameters of a 
+    Geometric Brownian Motion (GBM) model using maximum likelihood estimation.
     """
+    # Convert input to numpy array
+    prices = np.asarray(prices)
+    
+    # 1. Compute consecutive log returns
+    log_returns = np.log(prices[1:] / prices[:-1])
+    
+    # 2. Calculate sample mean and variance of log returns
+    mean_log_return = np.mean(log_returns)
+    var_log_return = np.var(log_returns, ddof=1) # Using sample variance (unbiased)
+    
+    # 3. Apply MLE formulas to scale parameters by time step dt
+    sigma_hat = np.sqrt(var_log_return) / np.sqrt(dt)
+    mu_hat = (mean_log_return / dt) + 0.5 * (sigma_hat ** 2)
+    
+    return mu_hat, sigma_hat
 
-    # Convert the stock prices to log returns
-    S = np.log(prices[1:] / prices[:-1])
+# --- Example Usage ---
+if __name__ == "__main__":
+    # Simulated daily price data (252 trading days in a year)
+    np.random.seed(42)
+    true_mu = 0.10       # 10% annual expected return
+    true_sigma = 0.20    # 20% annual volatility
+    daily_dt = 1 / 252   # Time step
+    
+    # Generate a realistic sample GBM path
+    steps = 252
+    shocks = np.random.normal(0, np.sqrt(daily_dt), steps)
+    log_price_drifts = (true_mu - 0.5 * true_sigma**2) * daily_dt + true_sigma * shocks
+    simulated_prices = 100 * np.exp(np.cumsum(np.insert(log_price_drifts, 0, 0)))
 
-    # Estimate the drift (mu) and volatility (sigma)
-    mu = np.mean(S) / dt
-    sigma = np.std(S) / np.sqrt(dt)
-
-    # Calculate the log-likelihood of the observed data given the estimated parameters
-    log_likelihood = -0.5 * len(S) * np.log(2 * np.pi * sigma**2) - np.sum((S - mu * dt)**2) / (2 * sigma**2)
-
-    # Return the estimated parameters and log-likelihood
-    return mu, sigma, log_likelihood
-
-if __name__ == '__main__':
-    # Define true parameters for simulation
-    true_mu = 0.05
-    true_sigma = 0.2
-    S0 = 100  # Initial stock price
-    T = 1.0  # Time horizon (1 year)
-    N = 252  # Number of time steps (daily)
-
-    # Calculate path returns using Geometric Brownian Motion
-    dt = T / N
-    np.random.seed(42)  # For reproducibility
-    Z = np.random.standard_normal(N)  # Generate standard normal random variables
-
-    prices = S0 * np.exp(np.cumsum((true_mu - 0.5 * true_sigma**2) * dt + true_sigma * np.sqrt(dt) * Z))
-
-    # Estimate parameters using MLE
-    estimated_mu, estimated_sigma, log_likelihood = parameter_estimation_mle(prices, dt)
-
-    # Print the results
-    print(f"True mu: {true_mu}, Estimated mu: {estimated_mu:.3f}")
-    print(f"True sigma: {true_sigma}, Estimated sigma: {estimated_sigma:.3f}")
-    print(f"Log-likelihood: {log_likelihood:.4f}")
-
+    # Estimate parameters back from the simulated data
+    estimated_mu, estimated_sigma = estimate_gbm_parameters(simulated_prices, daily_dt)
+    
+    print(f"True Annual Drift (mu):      {true_mu:.4f}")
+    print(f"Estimated Annual Drift:      {estimated_mu:.4f}")
+    print(f"True Annual Volatility (sig): {true_sigma:.4f}")
+    print(f"Estimated Annual Volatility: {estimated_sigma:.4f}")
 
