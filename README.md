@@ -12,13 +12,13 @@ The numerical methods are validated against the analytical Black–Scholes price
 
 Under the risk-neutral measure, the asset price follows geometric Brownian motion:
 
-\[
+$$
 dS_t = rS_t\,dt + \sigma S_t\,dW_t.
-\]
+$$
 
 The exact terminal asset price is
 
-\[
+$$
 S_T =
 S_0
 \exp\left[
@@ -26,48 +26,47 @@ S_0
 +
 \sigma\sqrt{T}Z
 \right],
-\]
-
+$$
 where \(Z \sim \mathcal{N}(0,1)\).
 
 For a European call option, the payoff is
 
-\[
+$$
 C_T = \max(S_T-K, 0).
-\]
+$$ 
 
 ## Monte Carlo Pricing
 
 The Monte Carlo estimator is
 
-\[
+$$
 \hat{C}_N =
 e^{-rT}
 \frac{1}{N}
 \sum_{i=1}^{N}
 \max(S_T^{(i)}-K, 0).
-\]
+$$
 
 Monte Carlo error decreases at approximately
 
-\[
+$$
 O(N^{-1/2}).
-\]
+$$
 
 ## Black–Scholes Benchmark
 
 The analytical price of a European call is
 
-\[
+$$
 C =
 S_0N(d_1)
 -
 Ke^{-rT}N(d_2),
-\]
+$$
 
 where
 
-\[
+$$
 d_1 =
 \frac{
 \ln(S_0/K)
@@ -76,17 +75,17 @@ d_1 =
 }{
 \sigma\sqrt{T}
 },
-\]
+$$
 
-\[
+$$
 d_2 = d_1 - \sigma\sqrt{T}.
-\]
+$$
 
 ## PDE Method
 
 The Black–Scholes PDE is
 
-\[
+$$
 \frac{\partial C}{\partial t}
 +
 \frac{1}{2}\sigma^2 S^2
@@ -97,14 +96,14 @@ rS
 -
 rC
 =
-0.
-\]
+0
+$$
 
 The terminal condition is
 
-\[
+$$
 C(S,T) = \max(S-K,0).
-\]
+$$
 
 A Crank–Nicolson finite-difference scheme solves this PDE backward from maturity to obtain the option price at \(t=0\).
 
