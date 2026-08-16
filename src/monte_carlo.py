@@ -1,11 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class MonteCarlo:
+def monte_carlo_gbm():
     pass
-
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
