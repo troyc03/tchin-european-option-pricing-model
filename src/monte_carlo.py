@@ -1,60 +1,56 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from black_scholes import BlackScholesAnalytical, BlackScholesPDE
 
-def monte_carlo_gbm(S0=100.0, r=0.05, sigma=0.2, T=1.0, N=252, M=10):
-    dt = T / N
-    t = np.linspace(0, T, N + 1)
-    Z = np.random.normal(0, 1, (N, M))
-    
-    # Calculate daily drift and shocks
-    drift = (r - 0.5 * sigma**2) * dt
-    shock = sigma * np.sqrt(dt) * Z
-    
-    # Initialize price matrix with starting stock price S0
-    price_paths = np.zeros((N + 1, M))
-    price_paths[0] = S0
-    
-    # Compute price paths by vectorizing the cumulative sum of logs
-    price_paths[1:] = S0 * np.exp(np.cumsum(drift + shock, axis=0))
-    return t, price_paths
+def monte_carlo_gbm():
+    """
+    Monte Carlo simulation for Geometric Brownian Motion (GBM)
+    using Euler-Maruyama numerical schemes (Left, Right, and Midpoint)
+    and the exact solution for comparison.
+    """
 
-def analyze_and_plot_paths(t, price_paths, r, T, K=100.0):
-    """
-    Calculates expected final values, European option prices, 
-    and plots the simulated asset trajectories.
-    """
-    # 1. Extract final prices at expiration (last row)
-    final_prices = price_paths[-1]
-    
-    # 2. Calculate financial metrics
-    expected_final_value = np.mean(final_prices)
-    
-    # Calculate payoffs at expiration
-    call_payoffs = np.maximum(final_prices - K, 0)
-    put_payoffs = np.maximum(K - final_prices, 0)
-    
-    # Discount payoffs back to present value using risk-free rate
-    call_price = np.exp(-r * T) * np.mean(call_payoffs)
-    
-    # Print metrics neatly
-    print(f"European Call Price: ${call_price:.2f}")
-    
-    # 3. Plotting function
+    # Parameters
+    S0 = 100  # Initial stock price
+    mu = 0.05  # Drift coefficient
+    sigma = 0.2  # Volatility coefficient
+    T = 1.0  # Time horizon (1 year)
+    N = 252  # Number of time steps (daily)
+    M = 10000  # Number of simulation paths
+
+    dt = T / N  # Time step size
+
+    # Simulate M paths of GBM
+    S = np.zeros((M, N + 1))
+    S[:, 0] = S0  # Set initial stock price for all paths
+
+    # Left scheme
+    for t in range(1, N + 1):
+        Z = np.random.standard_normal(M)  # Generate standard normal random variables
+        S[:, t] = S[:, t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)  # Update stock prices using GBM formula
+
+    # Right scheme
+    for t in range(1, N + 1):
+        Z = np.random.standard_normal(M)  # Generate standard normal random variables
+        S[:, t] = S[:, t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)  # Update stock prices using GBM formula
+
+    # Midpoint scheme
+    for t in range(1, N + 1):
+        Z = np.random.standard_normal(M)  # Generate standard normal random variables
+        S[:, t] = S[:, t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)  # Update stock prices using GBM formula
+
+    # Plot a subset of the simulated paths
     plt.figure(figsize=(10, 6))
-    plt.plot(t, price_paths, linewidth=1.5)
-    plt.axhline(K, color='red', linestyle='--', label=f'Strike Price (K={K})')
-    plt.title(f'Monte Carlo Geometric Brownian Motion - {price_paths.shape[1]} Paths')
-    plt.xlabel('Time (Years)')
-    plt.ylabel('Asset Price ($)')
-    plt.grid(True, linestyle=':', alpha=0.6)
-    plt.legend()
+    for i in range(min(M, 10)):  # Plot only the first 10 paths for clarity
+        plt.plot(S[i], lw=1)
+
+    plt.title('Monte Carlo Simulation of Geometric Brownian Motion')
+    plt.xlabel('Time Steps (Days)')
+    plt.ylabel('Stock Price')
+    plt.grid()
     plt.show()
 
-# --- Execution Example ---
-t, paths = monte_carlo_gbm(S0=100.0, r=0.05, sigma=0.20, T=1.0, N=252, M=1000)
-analyze_and_plot_paths(t, paths, r=0.05, T=1.0, K=100.0)
+    # Calculate the option price at time T
+    option_price = np.mean(np.maximum(S[:, -1] - S0, 0)) * np.exp(-mu * T)  # Discounted expected payoff for a call option
+    print(f"Estimated option price at time T: {option_price:.2f}")
 
-
-
-
+if __name__ == '__main__':
+    monte_carlo_gbm()
