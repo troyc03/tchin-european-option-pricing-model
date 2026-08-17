@@ -108,3 +108,4 @@ For these parameters, the Black–Scholes European call price is approximately:
 
 - Implement Quasi-Monte Carlo methods to improve convergence of MC simulation
 - Plot log-log curve of convergence between Crank-Nicolson/MC simulations
+- Test all three models on real-market data
