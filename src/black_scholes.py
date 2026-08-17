@@ -113,9 +113,11 @@ def main():
     bs_pde = BlackScholesPDE(S_max, K, T, r, sigma, M, N, 'call') 
     numerical_price = bs_pde.price() 
     rel_error = np.abs(analytical_price - numerical_price) / analytical_price 
+    abs_error = np.abs(analytical_price - numerical_price)
     print(f'Analytical European Option Price: {analytical_price:.6f}') 
     print(f'Numerical European Option Price: {numerical_price:.6f}') 
     print(f'Relative Error: {rel_error:.6f}') 
+    print(f'Absolute Error: {abs_error:.6f}')
     
     error_df = pd.DataFrame({ 
         'Time Step': np.arange(N + 1), 
