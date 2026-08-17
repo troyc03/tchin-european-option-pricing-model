@@ -13,7 +13,7 @@ The numerical methods are validated against the analytical Black–Scholes price
 Under the risk-neutral measure, the asset price follows geometric Brownian motion:
 
 $$
-dS_t = rS_t\,dt + \sigma S_t\,dW_t.
+dS_t = rS_tdt + \sigma S_tdW_t.
 $$
 
 The exact terminal asset price is
@@ -108,3 +108,4 @@ For these parameters, the Black–Scholes European call price is approximately:
 
 - Implement Quasi-Monte Carlo methods to improve convergence of MC simulation
 - Plot log-log curve of convergence between Crank-Nicolson/MC simulations
+- Test all three models on real-market data
