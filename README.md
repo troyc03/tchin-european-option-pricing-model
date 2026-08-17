@@ -13,7 +13,7 @@ The numerical methods are validated against the analytical Black–Scholes price
 Under the risk-neutral measure, the asset price follows geometric Brownian motion:
 
 $$
-dS_t = rS_t\,dt + \sigma S_t\,dW_t.
+dS_t = rS_t\dt + \sigma S_t\dW_t.
 $$
 
 The exact terminal asset price is
