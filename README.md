@@ -101,7 +101,17 @@ n_simulations = 1000
 For these parameters, the Black–Scholes European call price is approximately:
 
 ```text
-10.4506
+Estimated Call Option Prices (Black-Scholes):
+Analytical European Option Price: 10.450584
+Numerical European Option Price: 10.770477
+Relative Error: 0.030610
+Absolute Error: 0.319893
+
+Estimated Call Option Prices (M=10000, N=252):
+Exact Solution:  10.4030
+Left Scheme:     10.4044
+Right Scheme:    10.4065
+Midpoint Scheme: 10.4054
 ```
 
 ## Future Work
