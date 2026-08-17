@@ -1,4 +1,4 @@
-# European Option Pricing with Monte Carlo and Crank–Nicolson
+# Optimal European Option Pricing Model using Monte Carlo and Crank–Nicolson Methods
 
 This project prices a European call option under the Black–Scholes model using:
 
