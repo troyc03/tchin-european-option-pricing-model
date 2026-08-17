@@ -20,8 +20,7 @@ def estimate_gbm_parameters(prices, dt):
     mu_hat = (mean_log_return / dt) + 0.5 * (sigma_hat ** 2)
     
     return mu_hat, sigma_hat
-
-# --- Example Usage ---
+    
 if __name__ == "__main__":
     # Simulated daily price data (252 trading days in a year)
     np.random.seed(42)
